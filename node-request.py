@@ -2,7 +2,8 @@
 # Needs kubernetes python library. 
 # https://github.com/kubernetes-client/python
 # Replace "your-node-pool-name" with the actual name of your node pool.
-# Replace "your-context-name" with the name of the context corresponding to the Kubernetes cluster you want to target
+# Replace "your-context-name" with the name of the context corresponding to the 
+# kubernetes cluster you want to target
 
 from kubernetes import client, config
 
