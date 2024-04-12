@@ -6,16 +6,19 @@
 
 from kubernetes import client, config
 
-def get_cpu_requests_per_node(context):
+def get_cpu_requests_per_node(node_pool_label_selector, kube_context):
     # Load kubeconfig file with the specified context
-    config.load_kube_config(context=context)
+    config.load_kube_config(context=kube_context)
 
     # Create Kubernetes API client
     api_instance = client.CoreV1Api()
 
     try:
-        # Retrieve list of nodes
-        nodes = api_instance.list_node().items
+        # Define label selector to filter nodes by node pool
+        label_selector = f"cloud.google.com/gke-nodepool={node_pool_label_selector}"
+
+        # Retrieve list of nodes with the specified label selector
+        nodes = api_instance.list_node(label_selector=label_selector).items
 
         cpu_requests_per_node = {}
 
@@ -39,10 +42,13 @@ def get_cpu_requests_per_node(context):
         print("Exception when calling CoreV1Api->list_node: %s\n" % e)
 
 if __name__ == "__main__":
-    # Specify the context of the Kubernetes cluster
+    # Specify the node pool label selector
+    node_pool_label_selector = "your-node-pool-name"
+
+    # Specify the Kubernetes context
     kube_context = "your-context-name"
 
-    cpu_requests_per_node = get_cpu_requests_per_node(kube_context)
-    print("CPU requests per Kubernetes node in the cluster with context:", kube_context)
+    cpu_requests_per_node = get_cpu_requests_per_node(node_pool_label_selector, kube_context)
+    print("CPU requests per Kubernetes node in node pool", node_pool_label_selector)
     for node, cpu_requests in cpu_requests_per_node.items():
         print(f"{node}: {cpu_requests}")
