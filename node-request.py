@@ -28,14 +28,16 @@ def get_cpu_requests_per_node(node_pool_label_selector, kube_context):
             node_name = node.metadata.name
             cpu_requests_per_node[node_name] = 0
 
-            # Retrieve node's allocatable resources
-            allocatable_resources = node.status.allocatable
-
-            # Get CPU requests
-            cpu_requests = allocatable_resources.get("cpu")
-
-            if cpu_requests:
-                cpu_requests_per_node[node_name] = cpu_requests
+        # Get pods running on the node
+        field_selector = f"spec.nodeName={node_name}"
+        pods = api_instance.list_pod_for_all_namespaces(field_selector=field_selector).items
+        for pod in pods:
+            for container in pod.spec.containers:
+                # Add CPU requests of each container in the pod
+                if container.resources and container.resources.requests:
+                    cpu_request = container.resources.requests.get('cpu')
+                    if cpu_request:
+                        cpu_requests_per_node[node_name] += cpu_request.milli_value
 
         return cpu_requests_per_node
 
