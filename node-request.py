@@ -37,7 +37,12 @@ def get_cpu_requests_per_node(node_pool_label_selector, kube_context):
                 if container.resources and container.resources.requests:
                     cpu_request = container.resources.requests.get('cpu')
                     if cpu_request:
-                        cpu_requests_per_node[node_name] += cpu_request.milli_value
+                        if isinstance(cpu_request, str):
+                            # Assume it's specified in milliCPU format
+                            cpu_request = int(cpu_request)
+                        else:
+                            cpu_request = cpu_request.milli_value
+                        node_cpu_requests[node_name] += cpu_request
 
         return cpu_requests_per_node
 
