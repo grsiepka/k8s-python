@@ -7,6 +7,13 @@
 
 from kubernetes import client, config
 
+def parse_cpu_request(cpu_request_str):
+    # Extract the numerical value and convert it to milliCPU
+    if cpu_request_str.endswith("m"):
+        return int(cpu_request_str[:-1])
+    else:
+        return int(cpu_request_str) * 1000
+
 def get_cpu_requests_per_node(node_pool_label_selector, kube_context):
     # Load kubeconfig file with the specified context
     config.load_kube_config(context=kube_context)
@@ -37,12 +44,8 @@ def get_cpu_requests_per_node(node_pool_label_selector, kube_context):
                 if container.resources and container.resources.requests:
                     cpu_request = container.resources.requests.get('cpu')
                     if cpu_request:
-                        if isinstance(cpu_request, str):
-                            # Assume it's specified in milliCPU format
-                            cpu_request = int(cpu_request)
-                        else:
-                            cpu_request = cpu_request.milli_value
-                        node_cpu_requests[node_name] += cpu_request
+                        node_cpu_requests[node_name] += parse_cpu_request(cpu_request)
+
 
         return cpu_requests_per_node
 
