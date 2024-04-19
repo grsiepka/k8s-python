@@ -36,15 +36,15 @@ def get_cpu_requests_per_node(node_pool_label_selector, kube_context):
             cpu_requests_per_node[node_name] = 0
 
         # Get pods running on the node
-        field_selector = f"spec.nodeName={node_name}"
-        pods = api_instance.list_pod_for_all_namespaces(field_selector=field_selector).items
-        for pod in pods:
-            for container in pod.spec.containers:
-                # Add CPU requests of each container in the pod
-                if container.resources and container.resources.requests:
-                    cpu_request = container.resources.requests.get('cpu')
-                    if cpu_request:
-                        node_cpu_requests[node_name] += parse_cpu_request(cpu_request)
+            field_selector = f"spec.nodeName={node_name}"
+            pods = api_instance.list_pod_for_all_namespaces(field_selector=field_selector).items
+            for pod in pods:
+                for container in pod.spec.containers:
+                    # Add CPU requests of each container in the pod
+                    if container.resources and container.resources.requests:
+                        cpu_request = container.resources.requests.get('cpu')
+                        if cpu_request:
+                            node_cpu_requests[node_name] += parse_cpu_request(cpu_request)
 
 
         return cpu_requests_per_node
