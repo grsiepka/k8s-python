@@ -2,8 +2,7 @@
 # Needs kubernetes python library. 
 # https://github.com/kubernetes-client/python
 # Replace "your-node-pool-name" with the actual name of your node pool.
-# Replace "your-context-name" with the name of the context corresponding to the 
-# kubernetes cluster you want to target
+# Uses current kubernetes cluster context.
 
 from kubernetes import client, config
 
@@ -14,9 +13,9 @@ def parse_cpu_request(cpu_request_str):
     else:
         return int(cpu_request_str) * 1000
 
-def get_cpu_requests_per_node(node_pool_label_selector, kube_context):
-    # Load kubeconfig file with the specified context
-    config.load_kube_config(context=kube_context)
+def get_cpu_requests_per_node(node_pool_label_selector):
+
+    config.load_kube_config()
 
     # Create Kubernetes API client
     api_instance = client.CoreV1Api()
@@ -46,7 +45,6 @@ def get_cpu_requests_per_node(node_pool_label_selector, kube_context):
                         if cpu_request:
                             cpu_requests_per_node[node_name] += parse_cpu_request(cpu_request)
 
-
         return cpu_requests_per_node
 
     except Exception as e:
@@ -56,10 +54,7 @@ if __name__ == "__main__":
     # Specify the node pool label selector
     node_pool_label_selector = "your-node-pool-name"
 
-    # Specify the Kubernetes context
-    kube_context = "your-context-name"
-
-    cpu_requests_per_node = get_cpu_requests_per_node(node_pool_label_selector, kube_context)
+    cpu_requests_per_node = get_cpu_requests_per_node(node_pool_label_selector)
     print("CPU requests per Kubernetes node in node pool", node_pool_label_selector)
     for node, cpu_requests in cpu_requests_per_node.items():
         print(f"{node}: {cpu_requests}")
